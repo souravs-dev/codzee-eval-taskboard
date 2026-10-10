@@ -1,0 +1,14 @@
+{
+  "name": "codzee-eval-taskboard",
+  "version": "0.1.0",
+  "description": "Small task board REST API used to evaluate Codzee code review",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": { "node": ">=22.5" },
+  "license": "MIT",
+  "dependencies": { "express": "^4.21.0" }
+}
