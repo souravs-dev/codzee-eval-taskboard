@@ -23,3 +23,8 @@ Requires Node >= 22.5 (uses `node:sqlite`).
 | POST | /tasks | create task |
 | PATCH | /tasks/:id | update status |
 | DELETE | /tasks/:id | delete task |
+
+## Auth
+
+Set `AUTH_SECRET` before starting. `POST /users` takes `{ email, name, password }`;
+`POST /login` returns a bearer token (1h) required for `POST/PATCH/DELETE /tasks`.
