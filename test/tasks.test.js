@@ -34,3 +34,27 @@ test('rejects invalid status', async () => {
     assert.equal(res.status, 400);
   });
 });
+
+test('PATCH and DELETE return 404 for a missing task', async () => {
+  await withServer(async (base) => {
+    const patch = await fetch(`${base}/tasks/999`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ status: 'done' }),
+    });
+    assert.equal(patch.status, 404);
+    const del = await fetch(`${base}/tasks/999`, { method: 'DELETE' });
+    assert.equal(del.status, 404);
+  });
+});
+
+test('POST /tasks rejects an unknown assignee', async () => {
+  await withServer(async (base) => {
+    const res = await fetch(`${base}/tasks`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ title: 'x', assignee_id: 42 }),
+    });
+    assert.equal(res.status, 400);
+  });
+});
