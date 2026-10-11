@@ -18,7 +18,7 @@ Requires Node >= 22.5 (uses `node:sqlite`).
 | Method | Path | Description |
 | --- | --- | --- |
 | POST | /users | create user |
-| GET | /tasks | list tasks |
+| GET | /tasks | list tasks (`limit`, `offset`, `status`, `assignee_id`) |
 | GET | /tasks/:id | get task |
 | POST | /tasks | create task |
 | PATCH | /tasks/:id | update status |
