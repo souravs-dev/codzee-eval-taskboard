@@ -31,6 +31,10 @@ export function createApp(db) {
   app.post('/tasks', (req, res) => {
     const { title, assignee_id } = req.body;
     if (!title) return res.status(400).json({ error: 'title required' });
+    if (assignee_id != null) {
+      const user = db.prepare('SELECT id FROM users WHERE id = ?').get(assignee_id);
+      if (!user) return res.status(400).json({ error: 'assignee not found' });
+    }
     const info = db
       .prepare('INSERT INTO tasks (title, assignee_id) VALUES (?, ?)')
       .run(title, assignee_id ?? null);
@@ -40,12 +44,14 @@ export function createApp(db) {
   app.patch('/tasks/:id', (req, res) => {
     const { status } = req.body;
     if (!STATUSES.includes(status)) return res.status(400).json({ error: 'invalid status' });
-    db.prepare('UPDATE tasks SET status = ? WHERE id = ?').run(status, req.params.id);
+    const info = db.prepare('UPDATE tasks SET status = ? WHERE id = ?').run(status, req.params.id);
+    if (info.changes === 0) return res.status(404).json({ error: 'not found' });
     res.json({ id: Number(req.params.id), status });
   });
 
   app.delete('/tasks/:id', (req, res) => {
-    db.prepare('DELETE FROM tasks WHERE id = ?').run(req.params.id);
+    const info = db.prepare('DELETE FROM tasks WHERE id = ?').run(req.params.id);
+    if (info.changes === 0) return res.status(404).json({ error: 'not found' });
     res.status(204).end();
   });
 
