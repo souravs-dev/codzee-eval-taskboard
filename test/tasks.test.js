@@ -34,3 +34,25 @@ test('rejects invalid status', async () => {
     assert.equal(res.status, 400);
   });
 });
+
+const json = { 'content-type': 'application/json' };
+
+test('GET /tasks paginates and filters by status', async () => {
+  await withServer(async (base) => {
+    for (const title of ['a', 'b', 'c']) {
+      await fetch(`${base}/tasks`, { method: 'POST', headers: json, body: JSON.stringify({ title }) });
+    }
+    await fetch(`${base}/tasks/2`, { method: 'PATCH', headers: json, body: JSON.stringify({ status: 'done' }) });
+
+    const page = await (await fetch(`${base}/tasks?limit=2&offset=1`)).json();
+    assert.equal(page.total, 3);
+    assert.deepEqual(page.items.map((t) => t.title), ['b', 'c']);
+
+    const done = await (await fetch(`${base}/tasks?status=done`)).json();
+    assert.equal(done.total, 1);
+    assert.equal(done.items[0].title, 'b');
+
+    const bad = await fetch(`${base}/tasks?status=nope`);
+    assert.equal(bad.status, 400);
+  });
+});

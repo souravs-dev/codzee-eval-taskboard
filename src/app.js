@@ -18,8 +18,27 @@ export function createApp(db) {
   });
 
   app.get('/tasks', (req, res) => {
-    const rows = db.prepare('SELECT * FROM tasks ORDER BY id').all();
-    res.json(rows);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 100);
+    const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
+    const where = [];
+    const params = [];
+    if (req.query.status) {
+      if (!STATUSES.includes(req.query.status)) {
+        return res.status(400).json({ error: 'invalid status' });
+      }
+      where.push('status = ?');
+      params.push(req.query.status);
+    }
+    if (req.query.assignee_id) {
+      where.push('assignee_id = ?');
+      params.push(Number(req.query.assignee_id));
+    }
+    const clause = where.length ? `WHERE ${where.join(' AND ')}` : '';
+    const total = db.prepare(`SELECT COUNT(*) AS n FROM tasks ${clause}`).get(...params).n;
+    const items = db
+      .prepare(`SELECT * FROM tasks ${clause} ORDER BY id LIMIT ? OFFSET ?`)
+      .all(...params, limit, offset);
+    res.json({ items, total, limit, offset });
   });
 
   app.get('/tasks/:id', (req, res) => {
