@@ -6,7 +6,8 @@ export function openDb(path = ':memory:') {
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL UNIQUE,
-      name TEXT NOT NULL
+      name TEXT NOT NULL,
+      password_hash TEXT
     );
     CREATE TABLE IF NOT EXISTS tasks (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
