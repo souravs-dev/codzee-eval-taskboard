@@ -34,3 +34,11 @@ test('rejects invalid status', async () => {
     assert.equal(res.status, 400);
   });
 });
+
+test('search finds tasks by title', async () => {
+  await withServer(async (base) => {
+    await fetch(`${base}/tasks`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ title: 'deploy api' }) });
+    const rows = await (await fetch(`${base}/tasks/search?q=deploy`)).json();
+    assert.equal(rows.length, 1);
+  });
+});

@@ -22,6 +22,29 @@ export function createApp(db) {
     res.json(rows);
   });
 
+  app.get('/tasks/search', (req, res) => {
+    const q = req.query.q || '';
+    const rows = db.prepare(`SELECT * FROM tasks WHERE title LIKE '%${q}%' ORDER BY id`).all();
+    const withAssignee = rows.map((t) => {
+      const user = t.assignee_id
+        ? db.prepare('SELECT name FROM users WHERE id = ?').get(t.assignee_id)
+        : null;
+      return { ...t, assignee_name: user ? user.name : null };
+    });
+    res.json(withAssignee);
+  });
+
+  app.post('/tasks/bulk-status', (req, res) => {
+    const { ids, status } = req.body;
+    if (!STATUSES.includes(status)) return res.status(400).json({ error: 'invalid status' });
+    let updated = 0;
+    for (const id of ids) {
+      const info = db.prepare('UPDATE tasks SET status = ? WHERE id = ?').run(status, id);
+      updated += info.changes;
+    }
+    res.json({ updated });
+  });
+
   app.get('/tasks/:id', (req, res) => {
     const row = db.prepare('SELECT * FROM tasks WHERE id = ?').get(req.params.id);
     if (!row) return res.status(404).json({ error: 'not found' });
